@@ -150,7 +150,7 @@ public:
 	}
 
 	template <typename T>
-	T pop() //Возвращает оставшийся размер
+	T pop()
 	{
 		static_assert(std::is_trivially_copyable_v<T>(), "T must be trivially copyable (POD-like) for memcpy safety.");
 		T data;
@@ -163,7 +163,7 @@ public:
 	}
 
 	template <typename T>
-	T pop_back() //Возвращает оставшийся размер
+	T pop_back()
 	{
 		static_assert(std::is_trivially_copyable_v<T>(), "T must be trivially copyable (POD-like) for memcpy safety.");
 		T data;
@@ -213,7 +213,7 @@ public:
 			return nullptr;
 		char* start = (char*)(array_ + readPtr_);
 		size_t len = strnlen(start, size_ - readPtr_);
-		if(readPtr_ + len >= size_) //Нет завершающего нуля
+		if(readPtr_ + len >= size_)
 			return nullptr;
 		readPtr_ += len + 1;
 		return start;
