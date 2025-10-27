@@ -4,6 +4,8 @@ project(EasyUDPLib VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_compile_options(-Wall -Wextra -pedantic)
+
 add_library(udp_library STATIC
     src/dynamicMessage.cpp
     src/dataTransmitter.cpp
@@ -45,3 +47,5 @@ install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/UDPLibraryConfigVersion.cmake"
     DESTINATION lib/cmake/UDPLibrary
 )
+
+add_subdirectory(example)
