@@ -23,6 +23,37 @@ static_assert
 	"This library does not support mixed-endian (PDP-endian) architectures!"
 );
 
+
+template<typename T>
+constexpr T reverseByteOrder(T val)
+{
+	static_assert(std::is_trivially_copyable<T>(), "template<typename T> static constexpr T reverseByteOrder(T) T shoud be trivially copyable (POD-like)");
+	std::array<uint8_t, sizeof(T)> res = std::bit_cast<std::array<uint8_t, sizeof(T)>>(val);
+	for(size_t i = 0; i < sizeof(T)/2; ++i)
+	{
+		std::swap(res[i], res[sizeof(T)-1-i]);
+	}
+	return std::bit_cast<uint32_t>(res);
+}
+
+template<typename T>
+constexpr T hton(T val)
+{
+	static_assert(std::is_trivially_copyable<T>(), "template<typename T> static constexpr T hton(T) T shoud be trivially copyable (POD-like)");
+	if(std::endian::native == std::endian::big)
+		return val;
+	return reverseByteOrder(val);
+}
+
+template<typename T>
+constexpr T ntoh(T val)
+{
+	static_assert(std::is_trivially_copyable<T>(), "template<typename T> static constexpr T ntoh(T) T shoud be trivially copyable (POD-like)");
+	if(std::endian::native == std::endian::big)
+		return val;
+	return reverseByteOrder(val);
+}
+
 class IPAddress
 {
 	std::array<uint8_t, 4> octets_;
@@ -35,38 +66,7 @@ class IPAddress
 	octets_(ip)
 	{}
 
-	template<typename T>
-	static constexpr T reverseByteOrder(T val)
-	{
-		static_assert(std::is_trivially_copyable<T>(),
-"template<typename T> static constexpr T reverseByteOrder(T) T shoud be trivially copyable (POD-like)");
-		std::array<uint8_t, sizeof(T)> res = std::bit_cast<std::array<uint8_t, sizeof(T)>>(val);
-		for(size_t i = 0; i < sizeof(T)/2; ++i)
-		{
-			std::swap(res[i], res[sizeof(T)-1-i]);
-		}
-		return std::bit_cast<uint32_t>(res);
-	}
-
-	template<typename T>
-	static constexpr T hton(T val)
-	{
-		static_assert(std::is_trivially_copyable<T>(),
-"template<typename T> static constexpr T hton(T) T shoud be trivially copyable (POD-like)");
-		if(std::endian::native == std::endian::big)
-			return val;
-		return reverseByteOrder(val);
-	}
-
-	template<typename T>
-	static constexpr T ntoh(T val)
-	{
-		static_assert(std::is_trivially_copyable<T>(),
-"template<typename T> static constexpr T ntoh(T) T shoud be trivially copyable (POD-like)");
-		if(std::endian::native == std::endian::big)
-			return val;
-		return reverseByteOrder(val);
-	}
+	
 
 
 public:
