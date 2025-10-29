@@ -1,48 +1,9 @@
-#if !defined DATA_TRANSMITTER_H
-#define DATA_TRANSMITTER_H
-
-#ifdef _WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#pragma comment(lib, "ws2_32.lib") // Link with ws2_32.lib
-#else
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#endif
-
-
-#include <iostream>
-#include <cstddef>
-#include <inttypes.h>
-#include <type_traits>
-#include <cstring>
-#include <stdexcept>
-#include <cassert>
-#include <sstream>
-#include <optional>
-
-#include <functional>
-
-#include <message.h>
-#include <IPAddress.h>
-
-
-
-struct receiveInfo
-{
-	size_t dataSize;
-	IPAddress remoteIP;
-};
+#include <udpsocket.h>
 
 class DataTransmitter {
 
-#if defined _WIN32
-	SOCKET sock_;
-#else	
-	int sock_;
-#endif
+	 sock;
+
 	sockaddr_in target_;
 	bool lockTargetIP_;
 	char* magicString_;
@@ -97,6 +58,4 @@ public:
 	
 	IPAddress targetIP();
 	IPAddress IP();
-
 };
-#endif

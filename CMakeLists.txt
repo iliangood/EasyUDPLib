@@ -8,8 +8,8 @@ add_compile_options(-Wall -Wextra -pedantic)
 
 add_library(udp_library STATIC
     src/dynamicMessage.cpp
-    src/dataTransmitter.cpp
-	src/IPAddress.cpp
+    src/udpsocket.cpp
+	src/ipaddress.cpp
 )
 
 target_include_directories(udp_library PUBLIC

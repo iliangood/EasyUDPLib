@@ -70,12 +70,15 @@ class IPAddress
 
 
 public:
+
 	constexpr IPAddress(uint8_t first, uint8_t second, uint8_t third, uint8_t fourth) noexcept :
 	octets_{first, second, third, fourth}
 	{}
 
+	
 	constexpr IPAddress(const IPAddress& other) noexcept = default;
 	constexpr IPAddress& operator=(const IPAddress& other) noexcept = default;
+	
 
 	static constexpr IPAddress fromHost(uint32_t ip) noexcept // from Host-endian
 	{
@@ -174,7 +177,13 @@ public:
 	}
 	
 	friend std::ostream& operator<<(std::ostream& stream, const IPAddress& ip);
+
 };
+
+inline constexpr IPAddress IP_BROADCAST{255, 255, 255, 255};
+inline constexpr IPAddress IP_ANY{0, 0, 0, 0};
+inline constexpr IPAddress IP_LOCALHOST{127, 0, 0, 1};
+
 
 namespace std
 {
