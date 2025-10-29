@@ -20,66 +20,15 @@
 #include <cstring>
 #include <stdexcept>
 #include <cassert>
+#include <sstream>
+#include <optional>
+
+#include <functional>
 
 #include <message.h>
+#include <IPAddress.h>
 
-class IPAddress
-{
-	in_addr_t ip_;
 
-	IPAddress(in_addr_t ip) : ip_(ip) {}
-public:
-	IPAddress(uint8_t first, uint8_t second, uint8_t third, uint8_t fourth) : 
-	ip_(htonl(
-		first << 24 |
-		second << 16 |
-		third << 8 |
-		fourth
-		)) {}
-
-	IPAddress(const IPAddress& other) = default;
-	IPAddress& operator=(const IPAddress& other) = default;
-
-	static IPAddress FromHost(uint32_t ip) // from Host-endian
-	{
-		return IPAddress(htonl(ip));
-		INADDR_LOOPBACK;
-	}
-	static IPAddress FromNet(in_addr_t ip) // from Big-endian
-	{
-		return IPAddress(ip);
-	}
-
-	uint32_t toHost() const
-	{
-		return ntohl(ip_);
-	}
-	uint32_t toNet() const
-	{
-		return ip_;
-	}
-	
-	uint8_t operator[](size_t index) const
-	{
-		assert(index < 4 && "uint8_t IPAddress::operator[](size_t) Out of range: IPAddress has only 4 fields");
-		return static_cast<uint8_t>(ip_ >> ((3-index) * 8) & 0xFF);
-	}
-
-	uint8_t at(size_t index) const
-	{
-		if(index > 3)
-			throw std::out_of_range("uint8_t IPAddress::at(size_t) IPAddress has only 4 fields");
-		return static_cast<uint8_t>(ip_ >> ((3-index) * 8) & 0xFF);
-	}
-
-	uint8_t first() const  { return (*this)[0]; }
-	uint8_t second() const { return (*this)[1]; }
-	uint8_t third() const  { return (*this)[2]; }
-	uint8_t fourth() const { return (*this)[3]; }
-
-	bool operator==(const IPAddress& other) const { return ip_ == other.ip_; }
-	bool operator!=(const IPAddress& other) const { return !(*this == other); }
-};
 
 struct receiveInfo
 {

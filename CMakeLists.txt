@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.28.3)
 project(EasyUDPLib VERSION 0.1 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_compile_options(-Wall -Wextra -pedantic)
@@ -9,6 +9,7 @@ add_compile_options(-Wall -Wextra -pedantic)
 add_library(udp_library STATIC
     src/dynamicMessage.cpp
     src/dataTransmitter.cpp
+	src/IPAddress.cpp
 )
 
 target_include_directories(udp_library PUBLIC
