@@ -33,7 +33,7 @@ constexpr T reverseByteOrder(T val)
 	{
 		std::swap(res[i], res[sizeof(T)-1-i]);
 	}
-	return std::bit_cast<uint32_t>(res);
+	return std::bit_cast<T>(res);
 }
 
 template<typename T>
@@ -115,7 +115,7 @@ public:
 
 	constexpr uint8_t& at(size_t index)
 	{
-		if(index < 4)
+		if(index >= 4)
 			throw std::out_of_range("uint8_t& IPAddress::at(size_t) IP address has only 4 octets");
 		return octets_[index];
 	}
@@ -139,7 +139,40 @@ public:
 	constexpr bool operator==(const IPAddress& other) const noexcept { return octets_ == other.octets_; }
 	constexpr bool operator!=(const IPAddress& other) const noexcept { return !(*this == other); }
 
-
+	constexpr IPAddress operator&(const IPAddress& other) const noexcept
+	{
+		return IPAddress(toNet() & other.toNet());
+	}
+	constexpr IPAddress operator|(const IPAddress& other) const noexcept
+	{
+		return IPAddress(toNet() | other.toNet());
+	}
+	constexpr IPAddress operator^(const IPAddress& other)
+	{
+		return IPAddress(toNet() ^ other.toNet());
+	}
+	
+	constexpr IPAddress& operator&=(const IPAddress& other)
+	{
+		*this = IPAddress(*this & other);
+		return *this;
+	}
+	constexpr IPAddress& operator|=(const IPAddress& other)
+	{
+		*this = IPAddress(*this | other);
+		return *this;
+	}
+	constexpr IPAddress& operator^=(const IPAddress& other)
+	{
+		*this = IPAddress(*this ^ other);
+		return *this;
+	}
+	
+	constexpr IPAddress operator~() const noexcept
+	{
+		return IPAddress(~this->toNet());
+	}
+	
 	friend std::ostream& operator<<(std::ostream& stream, const IPAddress& ip);
 };
 

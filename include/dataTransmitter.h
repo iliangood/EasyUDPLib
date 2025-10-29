@@ -74,7 +74,6 @@ public:
 	int sendData(const Message<N>& data)
 	{
 		return sendData(data.getData(), data.getSize());
-		INADDR_LOOPBACK;
 	}
 
 	receiveInfo receiveData(uint8_t* buffer, size_t maxSize);
