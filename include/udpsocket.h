@@ -65,7 +65,7 @@ enum class UDPError {
 
 UDPError last_udp_error() {
     int err = SOCKET_ERROR_CODE;
-
+	errno = 0;
 #ifdef _WIN32
     switch (err) {
         case 0:                     return UDPError::SUCCESS;
@@ -102,11 +102,10 @@ UDPError last_udp_error() {
         case EDESTADDRREQ:          return UDPError::DEST_ADDRESS_REQUIRED;
         default:                    return UDPError::UNKNOWN;
     }
-	errno = 0;
 #endif
 }
 
-std::string udp_error_string(UDPError err) {
+std::string udp_error_to_string(UDPError err) {
     switch (err) {
         case UDPError::SUCCESS:               return "Success";
         case UDPError::PERMISSION_DENIED:     return "Permission denied (EACCES/WSAEACCES)";
@@ -152,8 +151,8 @@ public:
 
 	std::optional<UDPError> bind(uint16_t port); // port should be big-endian
 
-	std::variant<size_t, UDPError> send_to(uint8_t* data, size_t size, uint32_t ip); // ip should be big-endian
-	std::variant<size_t, UDPError> send_to(uint8_t* data, size_t size, IPAddress ip);
+	std::variant<size_t, UDPError> send_to(const uint8_t* data, size_t size, uint32_t ip); // ip should be big-endian
+	std::variant<size_t, UDPError> send_to(const uint8_t* data, size_t size, IPAddress ip);
 
 	std::variant<ReceiveInfo, UDPError> recieve(uint8_t* buf, size_t size);
 
