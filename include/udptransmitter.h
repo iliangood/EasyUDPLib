@@ -158,7 +158,7 @@ public:
 	template <size_t N>
 	ReceiveInfo receiveData(Message<N>* buffer)
 	{
-		ReceiveInfo rc = receiveData(buffer->size(), buffer->space());
+		ReceiveInfo rc = receiveData(buffer->end(), buffer->space());
 		buffer->addSize(rc.dataSize);
 		return rc;
 	}
