@@ -35,8 +35,10 @@ int main()
     {
         // Отправка данных
         try {
-            transmitter.sendData("hello from PC");
-            std::cout << "Sent data successfully" << std::endl;
+			std::string str;
+			std::cin >> str;
+            transmitter.sendData(str.c_str());
+			
         }
         catch (const std::exception& e) {
             std::cerr << "Send error: " << e.what() << std::endl;
