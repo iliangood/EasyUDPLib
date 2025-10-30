@@ -159,7 +159,7 @@ public:
 	ReceiveInfo receiveData(Message<N>* buffer)
 	{
 		ReceiveInfo rc = receiveData(buffer->size(), buffer->space());
-		buffer->addSize(rc.dataSize());
+		buffer->addSize(rc.dataSize);
 		return rc;
 	}
 
