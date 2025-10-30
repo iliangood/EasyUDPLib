@@ -1,4 +1,4 @@
 @PACKAGE_INIT@
 
 include("${CMAKE_CURRENT_LIST_DIR}/UDPLibraryTargets.cmake")
-check_required_components(UDPLibrary)
+check_required_components(EasyUDPLibrary)

@@ -33,13 +33,13 @@ install(DIRECTORY include/ DESTINATION include)
 
 install(EXPORT UDPLibraryTargets
     FILE UDPLibraryTargets.cmake
-    NAMESPACE UDPLibrary::
-    DESTINATION lib/cmake/UDPLibrary
+    NAMESPACE EasyUDPLibrary::
+    DESTINATION lib/cmake/EasyUDPLibrary
 )
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/UDPLibraryConfigVersion.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/EasyUDPLibraryConfigVersion.cmake"
     VERSION ${PROJECT_VERSION}
     COMPATIBILITY SameMajorVersion
 )
@@ -48,23 +48,23 @@ include(CMakePackageConfigHelpers)
 
 # Генерация Config-файла
 configure_package_config_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/UDPLibraryConfig.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/UDPLibraryConfig.cmake"
-    INSTALL_DESTINATION lib/cmake/UDPLibrary
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/EasyUDPLibraryConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/EasyUDPLibraryConfig.cmake"
+    INSTALL_DESTINATION lib/cmake/EasyUDPLibrary
 )
 
 # Версия
 write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/UDPLibraryConfigVersion.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/EasyUDPLibraryConfigVersion.cmake"
     VERSION ${PROJECT_VERSION}
     COMPATIBILITY SameMajorVersion
 )
 
 # Установка
 install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/UDPLibraryConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/UDPLibraryConfigVersion.cmake"
-    DESTINATION lib/cmake/UDPLibrary
+    "${CMAKE_CURRENT_BINARY_DIR}/EasyUDPLibraryConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/EasyUDPLibraryConfigVersion.cmake"
+    DESTINATION lib/cmake/EasyUDPLibrary
 )
 
 add_subdirectory(example)
