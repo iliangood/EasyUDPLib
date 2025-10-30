@@ -85,12 +85,19 @@ class UDPSocket
 {
 	socket_t sock_;
 	uint16_t port_;
+	uint32_t intefaceIP_;
+
+	std::optional<UDPError> bind(); 
 public:
 
 	UDPSocket();
 	~UDPSocket();
 
+	void reset();
+
 	std::optional<UDPError> bind(uint16_t port); // port should be big-endian
+	std::optional<UDPError> bindInteface(IPAddress ip);
+	std::optional<UDPError> bindInteface(uint32_t ip);
 
 	std::variant<size_t, UDPError> send_to(const uint8_t* data, size_t size, uint32_t ip); // ip should be big-endian
 	std::variant<size_t, UDPError> send_to(const uint8_t* data, size_t size, IPAddress ip);

@@ -35,6 +35,15 @@ public:
 	{}
 
 
+	bool bindInterface(IPAddress ip) // returns true if success
+	{
+		std::optional<UDPError> rc = sock().bindInteface(ip);
+		if(!rc.has_value())
+			return true;
+		std::cerr << udp_error_to_string(rc.value()) << std::endl;
+		return false;
+	}
+
 	void setLockTargetIP(bool lock)
 	{
 		lockTargetIP_ = lock;

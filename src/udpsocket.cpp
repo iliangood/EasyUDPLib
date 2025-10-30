@@ -31,17 +31,65 @@ UDPSocket::~UDPSocket()
 #endif
 }
 
-std::optional<UDPError> UDPSocket::bind(uint16_t port)
+void UDPSocket::reset()
 {
-	port_ = port;
+    if (sock_ != INVALID_SOCKET) 
+	{
+        CLOSE_SOCKET(sock_);
+        sock_ = INVALID_SOCKET;
+    }
+
+#if defined(_WIN32)
+    WSADATA wsa;
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+        throw std::runtime_error("WSAStartup failed");
+#endif
+
+    sock_ = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sock_ == INVALID_SOCKET)
+        throw std::runtime_error("socket() failed");
+
+    int enable = 1;
+    setsockopt(sock_, SOL_SOCKET, SO_BROADCAST, &enable, sizeof(enable));
+
+#if defined(_WIN32)
+    u_long mode = 1;
+    ioctlsocket(sock_, FIONBIO, &mode);
+#else
+    long flags = fcntl(sock_, F_GETFL, 0);
+    fcntl(sock_, F_SETFL, flags | O_NONBLOCK);
+#endif
+}
+
+std::optional<UDPError> UDPSocket::bind()
+{
+	reset();
+
 	sockaddr_in addr{};
 	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = INADDR_ANY;
-	addr.sin_port = port;
+	addr.sin_addr.s_addr = intefaceIP_;
+	addr.sin_port = port_;
 	int rc = ::bind(sock_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
 	if(rc == 0)
 		return std::nullopt;
 	return last_udp_error();
+}
+
+std::optional<UDPError> UDPSocket::bind(uint16_t port)
+{
+	port_ = port;
+	return bind();
+}
+
+std::optional<UDPError> UDPSocket::bindInteface(uint32_t ip)
+{
+	intefaceIP_ = ip;
+	return bind();
+}
+
+std::optional<UDPError> UDPSocket::bindInteface(IPAddress ip)
+{
+	return bind(ip.toNet());
 }
 
 std::variant<size_t, UDPError> UDPSocket::send_to(const uint8_t* data, size_t size, uint32_t ip) // ip should be big-endian
