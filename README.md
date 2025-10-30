@@ -21,11 +21,11 @@ project(test)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(UDPLibrary CONFIG REQUIRED)
+find_package(EasyUDPLibrary CONFIG REQUIRED)
 
 add_executable(prog main.cpp)
 
-target_link_libraries(prog PUBLIC UDPLibrary::udp_library)
+target_link_libraries(prog PUBLIC EasyUDPLibrary::udp_library)
 ```
 ### main.cpp:
 ```cpp
