@@ -7,6 +7,7 @@
 int main()
 {
 	UDPTransmitter transmitter(45088, "testing");
+	transmitter.setBroadcastTargetIP();
 	uint8_t buf[1024];
 	std::cout << transmitter.getBindInterface() << std::endl;
 	std::cout << transmitter.getBindPort() << std::endl;
