@@ -124,11 +124,14 @@ std::variant<ReceiveInfo, UDPError> UDPSocket::recieve(uint8_t* buf, size_t size
 	ssize_t rc = recvmsg(sock_, &msg, 0);
 	if(rc >= 0)
 	{
+		updateIPs();
 		if(reinterpret_cast<sockaddr*>(msg.msg_name)->sa_family == AF_INET)
 		{
 			IPAddress ip = IPAddress::fromNet(reinterpret_cast<sockaddr_in*>(msg.msg_name)->sin_addr.s_addr);
 			if(std::find(IPs.begin(), IPs.end(), ip) == IPs.end())
 				return ReceiveInfo(rc, ip);
+			std::cout<<"reject by ip" <<std::endl;
+			return RECEIVE_NONE;
 		}
 		return ReceiveInfo(rc, IP_ANY);
 	}
