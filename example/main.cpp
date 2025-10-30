@@ -34,15 +34,11 @@ int main()
     while (true)
     {
         // Отправка данных
-        try {
-			std::string str;
-			std::cin >> str;
-            transmitter.sendData(str.c_str());
-			
-        }
-        catch (const std::exception& e) {
-            std::cerr << "Send error: " << e.what() << std::endl;
-        }
+        
+		std::string str;
+		std::cin >> str;
+		transmitter.sendData(str.c_str());
+		
 
         // Попытка приёма данных с таймаутом
         auto start = std::chrono::steady_clock::now();
