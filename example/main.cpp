@@ -5,58 +5,42 @@
 
 #include <udptransmitter.h>
 
+struct exempleStruct
+{
+	int a;
+	long long b;
+};
+
 int main()
 {
     UDPTransmitter transmitter(45088, "testing");
-    uint8_t buf[1024];
     
-    try {        
-        std::cout << "Bind interface: " << transmitter.getBindInterface() << std::endl;
-        std::cout << "Bind port: " << transmitter.getBindPort() << std::endl;
-        
-        std::cout << "Available interfaces:" << std::endl;
-        std::vector<IPAddress> IPs = intefacesIPs();
-        for(const IPAddress& ip : IPs)
-        {
-            std::cout << "  " << ip << std::endl;
-        }
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Initialization error: " << e.what() << std::endl;
-        return 1;
-    }
+    Message<1024> msg;
 
-    while (true)
-    {
-        // Отправка данных
-		transmitter.sendData("hello");
-		
+	while(true)
+	{
+		msg.push("можно записать строку");
+		msg.push((uint32_t)12542);
+		msg.push(exempleStruct{124, 15125});
+		transmitter.sendData(msg);
 
-        // Попытка приёма данных с таймаутом
-        auto start = std::chrono::steady_clock::now();
-        auto timeout = std::chrono::milliseconds(1000); // 1 секунда на приём
-
-        while (std::chrono::steady_clock::now() - start < timeout)
-        {
-            ReceiveInfo rc = transmitter.receiveData(buf, 1024);
-            if(recieved(rc))
-            {
-                std::cout << "Received: " << buf << std::endl;
-                if(rc.remoteIP.has_value())
-                    std::cout << "From: " << rc.remoteIP.value() << std::endl;
-                else
-                    std::cout << "From: unknown" << std::endl;
-                break; // Выходим после успешного приёма
-            }
-            else if(rc.remoteIP.has_value())
-            {
-                std::cout << "Rejected data from: " << rc.remoteIP.value() << std::endl;
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        }
-
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
+		msg.clear();
+		ReceiveInfo rc = transmitter.receiveData(&msg);
+		if(recieved(rc))
+		{
+			std::cout << "recieved from: ";
+			if(rc.remoteIP.has_value())
+				std::cout << rc.remoteIP.value() << std::endl;
+			else
+				std::cout << "unkown" << std::endl;
+			std::cout << "data:" << std::endl;
+			std::cout << msg.readString() << std::endl;
+			std::cout << msg.read<uint32_t>() << std::endl;
+			exempleStruct ex = msg.read<exempleStruct>();
+			std::cout << ex.a << std::endl;
+			std::cout << ex.b << std::endl;
+		}
+	}
     
     return 0;
 }

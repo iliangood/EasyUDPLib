@@ -114,7 +114,7 @@ public:
 	template <typename T>
 	size_t push(const T& data) //Возвращает оставшееся место
 	{
-		static_assert(std::is_trivially_copyable_v<T>(), "T must be trivially copyable (POD-like) for memcpy safety.");
+		static_assert(std::is_trivially_copyable<T>(), "T must be trivially copyable (POD-like) for memcpy safety.");
 		if(sizeof(T) > getSpace())
 		{
 			return getSpace();
@@ -152,7 +152,7 @@ public:
 	template <typename T>
 	T pop()
 	{
-		static_assert(std::is_trivially_copyable_v<T>(), "T must be trivially copyable (POD-like) for memcpy safety.");
+		static_assert(std::is_trivially_copyable<T>(), "T must be trivially copyable (POD-like) for memcpy safety.");
 		T data;
 		if(sizeof(T) > size_)
 		{
@@ -165,7 +165,7 @@ public:
 	template <typename T>
 	T pop_back()
 	{
-		static_assert(std::is_trivially_copyable_v<T>(), "T must be trivially copyable (POD-like) for memcpy safety.");
+		static_assert(std::is_trivially_copyable<T>(), "T must be trivially copyable (POD-like) for memcpy safety.");
 		T data;
 		if(sizeof(T) > size_)
 		{
@@ -196,7 +196,7 @@ public:
 	template <typename T>
 	T read()
 	{
-		static_assert(std::is_trivially_copyable_v<T>(), "T must be trivially copyable (POD-like) for memcpy safety.");
+		static_assert(std::is_trivially_copyable<T>(), "T must be trivially copyable (POD-like) for memcpy safety.");
 		T data;
 		if(readPtr_ + sizeof(T) > size_)
 		{

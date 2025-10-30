@@ -44,8 +44,25 @@ write_basic_package_version_file(
     COMPATIBILITY SameMajorVersion
 )
 
+include(CMakePackageConfigHelpers)
+
+# Генерация Config-файла
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/UDPLibraryConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/UDPLibraryConfig.cmake"
+    INSTALL_DESTINATION lib/cmake/UDPLibrary
+)
+
+# Версия
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/UDPLibraryConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+# Установка
 install(FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/UDPLibraryConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/UDPLibraryConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/UDPLibraryConfigVersion.cmake"
     DESTINATION lib/cmake/UDPLibrary
 )
