@@ -14,7 +14,17 @@ int main()
 		ReceiveInfo rc = transmitter.receiveData(buf, 1024);
 		if(recieved(rc))
 		{
-			std::cout << "recieved:" << buf << std::endl;
+			std::cout << "recieved 1:" << buf << std::endl;
+		}
+		rc = transmitter.receiveData(buf, 1024);
+		if(recieved(rc))
+		{
+			std::cout << "recieved 2:" << buf << std::endl;
+		}
+		rc = transmitter.receiveData(buf, 1024);
+		if(recieved(rc))
+		{
+			std::cout << "recieved 3:" << buf << std::endl;
 		}
 		std::this_thread::sleep_for(std::chrono::seconds(2));
 	}
