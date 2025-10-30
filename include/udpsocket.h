@@ -29,11 +29,15 @@ using socket_t = int;
 #define SOCKET_ERROR (-1)
 
 #endif
-
+#include <ifaddrs.h>
+#include <netdb.h>
 
 #include <cstring>
 #include <stdexcept>
 #include <expected>
+#include <vector>
+#include <thread>
+#include <chrono>
 
 #include <message.h>
 #include <ipaddress.h>
@@ -81,11 +85,19 @@ inline bool recieved(ReceiveInfo rcInfo)
 inline constexpr ReceiveInfo RECEIVE_NONE(0, std::nullopt);
 
 
+inline std::vector<IPAddress> IPs;
+inline std::chrono::steady_clock::time_point last_update{};
+
+void updateIPs();
+
+std::vector<IPAddress> intefacesIPs();
+
 class UDPSocket
 {
 	socket_t sock_;
 	uint16_t port_;
 	uint32_t intefaceIP_;
+
 
 	std::optional<UDPError> bind(); 
 public:
@@ -96,6 +108,7 @@ public:
 	~UDPSocket();
 
 	void reset();
+
 
 	std::optional<UDPError> bind(uint16_t port); // port should be big-endian
 	std::optional<UDPError> bindInteface(IPAddress ip);

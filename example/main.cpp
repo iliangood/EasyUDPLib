@@ -10,6 +10,11 @@ int main()
 	uint8_t buf[1024];
 	std::cout << transmitter.getBindInterface() << std::endl;
 	std::cout << transmitter.getBindPort() << std::endl;
+	std::vector<IPAddress> IPs = intefacesIPs();
+	for(IPAddress& ip : IPs)
+	{
+		std::cout << ip << std::endl;
+	}
 	while (true)
 	{
 		transmitter.sendData("hello from PC");

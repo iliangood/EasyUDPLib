@@ -124,8 +124,12 @@ std::variant<ReceiveInfo, UDPError> UDPSocket::recieve(uint8_t* buf, size_t size
 	ssize_t rc = recvmsg(sock_, &msg, 0);
 	if(rc >= 0)
 	{
-		if(reinterpret_cast<sockaddr*>(msg.msg_name)->sa_family == AF_INET)		
-			return ReceiveInfo(rc, IPAddress::fromNet(reinterpret_cast<sockaddr_in*>(msg.msg_name)->sin_addr.s_addr));
+		if(reinterpret_cast<sockaddr*>(msg.msg_name)->sa_family == AF_INET)
+		{
+			IPAddress ip = IPAddress::fromNet(reinterpret_cast<sockaddr_in*>(msg.msg_name)->sin_addr.s_addr);
+			if(std::find(IPs.begin(), IPs.end(), ip) == IPs.end())
+				return ReceiveInfo(rc, ip);
+		}
 		return ReceiveInfo(rc, IP_ANY);
 	}
 
@@ -142,6 +146,51 @@ uint16_t UDPSocket::getBindPort()
 uint32_t UDPSocket::getBindInterface()
 {
 	return intefaceIP_;
+}
+
+std::vector<IPAddress> intefacesIPs()
+{
+	ifaddrs* ifaddr;
+	int family;
+
+	std::vector<IPAddress> IPs;
+
+	if(getifaddrs(&ifaddr) != 0)
+		return {};
+	for (struct ifaddrs *ifa = ifaddr; ifa != NULL;
+			ifa = ifa->ifa_next) {
+		if (ifa->ifa_addr == NULL)
+			continue;
+		family = ifa->ifa_addr->sa_family;
+
+		if (family == AF_INET) 
+		{
+			sockaddr_in* addr = reinterpret_cast<sockaddr_in*>(ifa->ifa_addr);
+			IPs.push_back(IPAddress::fromNet(addr->sin_addr.s_addr));
+		}
+
+	}
+	freeifaddrs(ifaddr);
+	return IPs;
+}
+
+void updateIPs()
+{
+	auto now = std::chrono::steady_clock::now();
+
+    if (last_update == std::chrono::steady_clock::time_point{}) {
+        last_update = now; 
+
+        return;
+    }
+
+    auto elapsed = now - last_update;
+
+    if (elapsed > std::chrono::seconds(10)) 
+	{
+		IPs = intefacesIPs();
+        last_update = now; 
+    }
 }
 
 UDPError last_udp_error() {
