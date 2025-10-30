@@ -1,25 +1,21 @@
 #include <udpsocket.h>
 
+#include <iostream>
+
 UDPSocket::UDPSocket()
 {
-#if defined _WIN32
-	WSADATA wsa;
-	if(WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-		throw std::runtime_error("WSAStartup failed");
-#endif
-	sock_ = socket(AF_INET, SOCK_DGRAM, 0);
-	if(sock_ == INVALID_SOCKET)
-		throw std::runtime_error("void UDPSocket::UDPSocket() socket() failed");
-	int enable = 1;
-	setsockopt(sock_, SOL_SOCKET, SO_BROADCAST, &enable, sizeof(enable));
+	reset();
+}
 
-#if defined _WIN32
-	u_long mode = 1;
-	ioctlsocket(sock_, FIONBIO, &mode);
-#else
-	long flags = fcntl(sock_, F_GETFL, 0);
-	fcntl(sock_, F_SETFL, flags | O_NONBLOCK);
-#endif
+UDPSocket::UDPSocket(uint32_t port)
+{
+	bind(port);
+}
+
+UDPSocket::UDPSocket(uint32_t port, IPAddress ip)
+{
+	bind(port);
+	bindInteface(ip);
 }
 
 UDPSocket::~UDPSocket()
@@ -89,7 +85,7 @@ std::optional<UDPError> UDPSocket::bindInteface(uint32_t ip)
 
 std::optional<UDPError> UDPSocket::bindInteface(IPAddress ip)
 {
-	return bind(ip.toNet());
+	return bindInteface(ip.toNet());
 }
 
 std::variant<size_t, UDPError> UDPSocket::send_to(const uint8_t* data, size_t size, uint32_t ip) // ip should be big-endian

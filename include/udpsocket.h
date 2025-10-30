@@ -91,6 +91,8 @@ class UDPSocket
 public:
 
 	UDPSocket();
+	UDPSocket(uint32_t port); // big-endian
+	UDPSocket(uint32_t port, IPAddress p); // big-endian
 	~UDPSocket();
 
 	void reset();

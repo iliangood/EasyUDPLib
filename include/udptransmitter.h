@@ -11,7 +11,6 @@
 class UDPTransmitter 
 {
 	std::variant<UDPSocket, UDPSocket*> sock_;
-	uint16_t port_;
 	IPAddress target_;
 	
 	bool lockTargetIP_;
@@ -25,15 +24,26 @@ class UDPTransmitter
 	}
 public:
 	UDPTransmitter(uint16_t port, std::string magicString) :
-	sock_(), port_(port), target_(IP_BROADCAST), magicString_(std::move(magicString))
+	sock_(), target_(IP_BROADCAST), magicString_(std::move(magicString))
 	{
-		sock().bind(port_);
+		sock().bind(hton(port));
+		sock().bindInteface(target_);
 	}
 
-	UDPTransmitter(uint16_t port, std::string magicString, UDPSocket sock) :
-	sock_(sock), port_(port), target_(IP_BROADCAST), magicString_(std::move(magicString))
-	{}
+	UDPTransmitter(UDPSocket* sock, std::string magicString) :
+	sock_(sock), target_(IP_BROADCAST), magicString_(std::move(magicString))
+	{
+		this->sock().bindInteface(target_);
+	}
 
+	bool bind(uint32_t port) // host-endian, returns true if success
+	{
+		std::optional<UDPError> rc = sock().bind(hton(port));
+		if(!rc.has_value())
+			return true;
+		std::cerr << udp_error_to_string(rc.value()) << std::endl;
+		return false;
+	}
 
 	bool bindInterface(IPAddress ip) // returns true if success
 	{
@@ -43,6 +53,7 @@ public:
 		std::cerr << udp_error_to_string(rc.value()) << std::endl;
 		return false;
 	}
+
 
 	void setLockTargetIP(bool lock)
 	{
