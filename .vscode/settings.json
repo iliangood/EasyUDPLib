@@ -52,6 +52,10 @@
 		"ctime": "cpp",
 		"expected": "cpp",
 		"format": "cpp",
-		"span": "cpp"
+		"span": "cpp",
+		"ratio": "cpp",
+		"semaphore": "cpp",
+		"stop_token": "cpp",
+		"thread": "cpp"
 	}
 }
