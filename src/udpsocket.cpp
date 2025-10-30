@@ -87,6 +87,6 @@ std::variant<ReceiveInfo, UDPError> UDPSocket::recieve(uint8_t* buf, size_t size
 
 	UDPError rcE = last_udp_error();
 	if(rcE == UDPError::WOULD_BLOCK)
-		return ReceiveInfo(0, std::nullopt);
+		return RECEIVE_NONE;
 	return rcE;
 }

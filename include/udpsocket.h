@@ -139,6 +139,8 @@ bool recieved(ReceiveInfo rcInfo)
 	return rcInfo.remoteIP.has_value();
 }
 
+inline constexpr ReceiveInfo RECEIVE_NONE(0, std::nullopt);
+
 
 class UDPSocket
 {

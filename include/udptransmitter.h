@@ -72,7 +72,10 @@ public:
 
 	ssize_t sendData(const uint8_t* data, size_t dataSize)
 	{
-		std::variant<size_t, UDPError> rc = sock().send_to(data, dataSize, target_);
+		uint8_t* buf = new uint8_t[dataSize + magicString_.length()];
+		memcpy(buf, magicString_.c_str(), magicString_.length());
+		memcpy(buf + magicString_.length(), data, dataSize);
+		std::variant<size_t, UDPError> rc = sock().send_to(buf, dataSize + magicString_.length(), target_);
 		if(std::holds_alternative<UDPError>(rc))
 		{
 			std::cerr << udp_error_to_string(std::get<UDPError>(rc)) << std::endl;
@@ -101,7 +104,13 @@ public:
 			std::cerr << udp_error_to_string(std::get<UDPError>(rc)) << std::endl;
 			return ReceiveInfo(0, std::nullopt);
 		}
-		return std::get<ReceiveInfo>(rc);
+		if(std::get<ReceiveInfo>(rc).dataSize < magicString_.length())
+			return RECEIVE_NONE;
+		if(memcmp(magicString_.c_str(), buffer, magicString_.length()) != 0)
+			return RECEIVE_NONE;
+		size_t new_size = std::get<ReceiveInfo>(rc).dataSize - magicString_.length();
+		memmove(buffer, buffer + magicString_.length(), new_size);
+		return ReceiveInfo(new_size, std::get<ReceiveInfo>(rc).remoteIP);
 	}
 
 	template <size_t N>
