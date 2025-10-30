@@ -108,9 +108,20 @@ public:
 			return RECEIVE_NONE;
 		if(memcmp(magicString_.c_str(), buffer, magicString_.length()) != 0)
 			return RECEIVE_NONE;
+		std::optional<IPAddress> remoteIP = std::get<ReceiveInfo>(rc).remoteIP;
+		if(remoteIP.has_value())
+		{
+			if(target_ != remoteIP.value())
+			{
+				if(lockTargetIP_)
+					return RECEIVE_NONE;
+				target_ = remoteIP.value();
+			}
+
+		}
 		size_t new_size = std::get<ReceiveInfo>(rc).dataSize - magicString_.length();
 		memmove(buffer, buffer + magicString_.length(), new_size);
-		return ReceiveInfo(new_size, std::get<ReceiveInfo>(rc).remoteIP);
+		return ReceiveInfo(new_size, remoteIP);
 	}
 
 	template <size_t N>

@@ -6,10 +6,16 @@
 int main()
 {
 	UDPTransmitter transmitter(45088, "testing");
+	uint8_t buf[1024];
 	while (true)
 	{
 		transmitter.sendData("hello from PC");
 		std::cout << "sended" << std::endl;
+		ReceiveInfo rc = transmitter.receiveData(buf, 1024);
+		if(recieved(rc))
+		{
+			std::cout << "recieved:" << buf << std::endl;
+		}
 		std::this_thread::sleep_for(std::chrono::seconds(2));
 	}
 	
