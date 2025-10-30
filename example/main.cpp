@@ -40,6 +40,7 @@ int main()
 			std::cout << ex.a << std::endl;
 			std::cout << ex.b << std::endl;
 		}
+		msg.clear();
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
     

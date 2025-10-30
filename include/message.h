@@ -178,6 +178,7 @@ public:
 	void clear()
 	{
 		size_ = 0;
+		readPtr_ = 0;
 	}
 
 	size_t getReadPtr() const
