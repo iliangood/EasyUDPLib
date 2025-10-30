@@ -1,3 +1,4 @@
+#include <iostream>
 #include <thread>
 
 #include <udptransmitter.h>
@@ -8,6 +9,7 @@ int main()
 	while (true)
 	{
 		transmitter.sendData("hello from PC");
+		std::cout << "sended" << std::endl;
 		std::this_thread::sleep_for(std::chrono::seconds(2));
 	}
 	
