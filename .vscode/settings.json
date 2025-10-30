@@ -47,6 +47,11 @@
 		"iostream": "cpp",
 		"istream": "cpp",
 		"sstream": "cpp",
-		"variant": "cpp"
+		"variant": "cpp",
+		"charconv": "cpp",
+		"ctime": "cpp",
+		"expected": "cpp",
+		"format": "cpp",
+		"span": "cpp"
 	}
 }

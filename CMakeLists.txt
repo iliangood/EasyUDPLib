@@ -10,6 +10,7 @@ add_library(udp_library STATIC
     src/dynamicMessage.cpp
     src/udpsocket.cpp
 	src/ipaddress.cpp
+	src/udptransmitter.cpp
 )
 
 target_include_directories(udp_library PUBLIC

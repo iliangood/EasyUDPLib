@@ -17,6 +17,7 @@ using socket_t = SOCKET;
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <cerrno>
 
@@ -32,6 +33,7 @@ using socket_t = int;
 
 #include <cstring>
 #include <stdexcept>
+#include <expected>
 
 #include <message.h>
 #include <ipaddress.h>
@@ -127,16 +129,33 @@ std::string udp_error_string(UDPError err) {
     }
 }
 
+struct ReceiveInfo
+{
+	size_t dataSize;
+	std::optional<IPAddress> remoteIP;
+};
+
+bool recieved(ReceiveInfo rcInfo)
+{
+	return rcInfo.remoteIP.has_value();
+}
+
+
 class UDPSocket
 {
 	socket_t sock_;
+	uint16_t port_;
 public:
 
 	UDPSocket();
 	~UDPSocket();
-	
-	int send_to(uint8_t* data, size_t size, uint32_t ip, uint16_t port); // ip and port should be big-endian
-	int send_to(uint8_t* data, size_t size, IPAddress ip, uint16_t port); // port should be Host-endian
+
+	std::optional<UDPError> bind(uint16_t port); // port should be big-endian
+
+	std::variant<size_t, UDPError> send_to(uint8_t* data, size_t size, uint32_t ip); // ip should be big-endian
+	std::variant<size_t, UDPError> send_to(uint8_t* data, size_t size, IPAddress ip);
+
+	std::variant<ReceiveInfo, UDPError> recieve(uint8_t* buf, size_t size);
 
 };
 
