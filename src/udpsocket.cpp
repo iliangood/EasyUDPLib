@@ -130,7 +130,7 @@ std::variant<ReceiveInfo, UDPError> UDPSocket::recieve(uint8_t* buf, size_t size
 			IPAddress ip = IPAddress::fromNet(reinterpret_cast<sockaddr_in*>(msg.msg_name)->sin_addr.s_addr);
 			if(std::find(IPs.begin(), IPs.end(), ip) == IPs.end())
 				return ReceiveInfo(rc, ip);
-			std::cout<<"reject by ip" <<std::endl;
+			std::cout<<"reject by ip:" << ip << std::endl;
 			return RECEIVE_NONE;
 		}
 		return ReceiveInfo(rc, IP_ANY);
