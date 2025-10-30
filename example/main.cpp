@@ -34,10 +34,7 @@ int main()
     while (true)
     {
         // Отправка данных
-        
-		std::string str;
-		std::cin >> str;
-		transmitter.sendData(str.c_str());
+		transmitter.sendData("hello");
 		
 
         // Попытка приёма данных с таймаутом

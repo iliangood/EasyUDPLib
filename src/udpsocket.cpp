@@ -124,11 +124,11 @@ std::variant<ReceiveInfo, UDPError> UDPSocket::recieve(uint8_t* buf, size_t size
 	ssize_t rc = recvmsg(sock_, &msg, 0);
 	if(rc >= 0)
 	{
-		updateIPs();
 		if(reinterpret_cast<sockaddr*>(msg.msg_name)->sa_family == AF_INET)
 		{
 			IPAddress ip = IPAddress::fromNet(reinterpret_cast<sockaddr_in*>(msg.msg_name)->sin_addr.s_addr);
-			if(std::find(IPs.begin(), IPs.end(), ip) == IPs.end())
+			std::vector<IPAddress> ips = intefacesIPs();
+			if(std::find(ips.begin(), ips.end(), ip) == ips.end())
 				return ReceiveInfo(rc, ip);
 			return RECEIVE_NONE;
 		}
@@ -150,55 +150,61 @@ uint32_t UDPSocket::getBindInterface()
 	return intefaceIP_;
 }
 
-std::vector<IPAddress> intefacesIPs()
+
+std::vector<IPAddress> getIntefacesIPs()
 {
 	ifaddrs* ifaddr;
 	int family;
-
+	
 	std::vector<IPAddress> IPs;
-
+	
 	if(getifaddrs(&ifaddr) != 0)
-		return {};
-	for (struct ifaddrs *ifa = ifaddr; ifa != NULL;
-			ifa = ifa->ifa_next) {
+	return {};
+	for (struct ifaddrs *ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) 
+	{
 		if (ifa->ifa_addr == NULL)
-			continue;
+		continue;
 		family = ifa->ifa_addr->sa_family;
-
+		
 		if (family == AF_INET) 
 		{
 			sockaddr_in* addr = reinterpret_cast<sockaddr_in*>(ifa->ifa_addr);
 			IPs.push_back(IPAddress::fromNet(addr->sin_addr.s_addr));
 		}
-
+		
 	}
 	freeifaddrs(ifaddr);
 	return IPs;
 }
 
-void updateIPs()
+
+std::vector<IPAddress> intefacesIPs()
 {
+	static std::chrono::steady_clock::time_point last_update{};
+	static std::vector<IPAddress> IPs; 
 	auto now = std::chrono::steady_clock::now();
-
-    if (last_update == std::chrono::steady_clock::time_point{}) {
-        last_update = now; 
-		IPs = intefacesIPs();
-        return;
-    }
-
-    auto elapsed = now - last_update;
-
-    if (elapsed > std::chrono::seconds(10)) 
+	
+	if (last_update == std::chrono::steady_clock::time_point{}) {
+		last_update = now; 
+		IPs = getIntefacesIPs();
+		return IPs;
+	}
+	
+	auto elapsed = now - last_update;
+	
+	if (elapsed > std::chrono::seconds(10)) 
 	{
-		IPs = intefacesIPs();
-        last_update = now; 
-    }
+		IPs = getIntefacesIPs();
+		last_update = now; 
+	}
+	return IPs;
 }
-
-UDPError last_udp_error() {
-    int err = SOCKET_ERROR_CODE;
-	errno = 0;
-#ifdef _WIN32
+	
+	inline std::chrono::steady_clock::time_point last_update{};
+	UDPError last_udp_error() {
+		int err = SOCKET_ERROR_CODE;
+		errno = 0;
+		#ifdef _WIN32
     switch (err) {
         case 0:                     return UDPError::SUCCESS;
         case WSAEACCES:             return UDPError::PERMISSION_DENIED;

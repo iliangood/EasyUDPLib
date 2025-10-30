@@ -85,11 +85,6 @@ inline bool recieved(ReceiveInfo rcInfo)
 inline constexpr ReceiveInfo RECEIVE_NONE(0, std::nullopt);
 
 
-inline std::vector<IPAddress> IPs;
-inline std::chrono::steady_clock::time_point last_update{};
-
-void updateIPs();
-
 std::vector<IPAddress> intefacesIPs();
 
 class UDPSocket
