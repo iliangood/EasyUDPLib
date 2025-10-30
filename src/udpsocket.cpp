@@ -135,6 +135,15 @@ std::variant<ReceiveInfo, UDPError> UDPSocket::recieve(uint8_t* buf, size_t size
 	return rcE;
 }
 
+uint16_t UDPSocket::getBindPort()
+{
+	return port_;
+}
+uint32_t UDPSocket::getBindInterface()
+{
+	return intefaceIP_;
+}
+
 UDPError last_udp_error() {
     int err = SOCKET_ERROR_CODE;
 	errno = 0;

@@ -27,13 +27,24 @@ public:
 	sock_(), target_(IP_BROADCAST), magicString_(std::move(magicString))
 	{
 		sock().bind(hton(port));
-		sock().bindInteface(target_);
+		sock().bindInteface(IP_ANY);
 	}
 
 	UDPTransmitter(UDPSocket* sock, std::string magicString) :
 	sock_(sock), target_(IP_BROADCAST), magicString_(std::move(magicString))
 	{
 		this->sock().bindInteface(target_);
+		this->sock().bindInteface(IP_ANY);
+	}
+
+	uint16_t getBindPort()
+	{
+		return ntoh(sock().getBindPort());
+	}
+
+	IPAddress getBindInterface()
+	{
+		return IPAddress::fromNet(sock().getBindInterface());
 	}
 
 	bool bind(uint32_t port) // host-endian, returns true if success

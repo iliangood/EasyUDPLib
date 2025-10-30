@@ -106,6 +106,9 @@ public:
 
 	std::variant<ReceiveInfo, UDPError> recieve(uint8_t* buf, size_t size);
 
+	uint16_t getBindPort();
+	uint32_t getBindInterface();
+
 };
 
 
