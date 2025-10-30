@@ -10,12 +10,7 @@ int main()
     UDPTransmitter transmitter(45088, "testing");
     uint8_t buf[1024];
     
-    try {
-        // Важно! Разрешаем прием от любого адреса
-        transmitter.setLockTargetIP(false);
-        // Устанавливаем broadcast адрес для отправки
-        transmitter.setBroadcastTargetIP();
-        
+    try {        
         std::cout << "Bind interface: " << transmitter.getBindInterface() << std::endl;
         std::cout << "Bind port: " << transmitter.getBindPort() << std::endl;
         
