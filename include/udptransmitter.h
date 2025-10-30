@@ -144,7 +144,7 @@ public:
 		{
 			if(target_ != remoteIP.value())
 			{
-				if(lockTargetIP_)
+				if(lockTargetIP_ && target_ != IP_BROADCAST)
 					return RECEIVE_NONE;
 				target_ = remoteIP.value();
 			}

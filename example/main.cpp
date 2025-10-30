@@ -11,6 +11,9 @@ int main()
     uint8_t buf[1024];
     
     try {
+        // Важно! Разрешаем прием от любого адреса
+        transmitter.setLockTargetIP(false);
+        // Устанавливаем broadcast адрес для отправки
         transmitter.setBroadcastTargetIP();
         
         std::cout << "Bind interface: " << transmitter.getBindInterface() << std::endl;
@@ -54,6 +57,10 @@ int main()
                 else
                     std::cout << "From: unknown" << std::endl;
                 break; // Выходим после успешного приёма
+            }
+            else if(rc.remoteIP.has_value())
+            {
+                std::cout << "Rejected data from: " << rc.remoteIP.value() << std::endl;
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
