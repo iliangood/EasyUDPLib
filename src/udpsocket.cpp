@@ -4,6 +4,7 @@
 
 UDPSocket::UDPSocket()
 {
+	intefaceIP_ = INADDR_ANY;
 	reset();
 }
 
