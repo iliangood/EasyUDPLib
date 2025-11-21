@@ -139,7 +139,7 @@ std::variant<ReceiveInfo, UDPError> UDPSocket::recieve(uint8_t* buf, size_t size
 		std::cout << "Received not AF_INET"<< std::endl;
 		return ReceiveInfo(rc, IP_ANY);
 	}
-	std::cout << "not received"<< std::endl;
+	//std::cout << "not received"<< std::endl;
 	UDPError rcE = last_udp_error();
 	if(rcE == UDPError::WOULD_BLOCK)
 		return RECEIVE_NONE;
