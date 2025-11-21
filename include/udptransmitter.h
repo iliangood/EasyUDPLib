@@ -10,11 +10,11 @@
 
 class UDPTransmitter 
 {
-	std::variant<UDPSocket, UDPSocket*> sock_;
+	std::variant<UDPSocket, UDPSocket*> sock_ = nullptr;
 	IPAddress target_;
 	
-	bool lockTargetIP_;
 	std::string magicString_;
+	bool lockTargetIP_;
 
 	UDPSocket& sock()
 	{
@@ -24,10 +24,10 @@ class UDPTransmitter
 	}
 public:
 	UDPTransmitter(uint16_t port, std::string magicString) :
-	sock_(), target_(IP_BROADCAST), magicString_(std::move(magicString))
+	 target_(IP_BROADCAST), magicString_(std::move(magicString)), lockTargetIP_(false)
 	{
-		sock().bind(hton(port));
-		sock().bindInteface(IP_ANY);
+		sock_ = UDPSocket(hton(port));
+		lockTargetIP_ = false;
 	}
 
 	UDPTransmitter(UDPSocket* sock, std::string magicString) :
@@ -44,7 +44,7 @@ public:
 		return IPAddress::fromNet(sock().getBindInterface());
 	}
 
-	bool bind(uint32_t port) // host-endian, returns true if success
+	bool bind(uint16_t port) // host-endian, returns true if success
 	{
 		std::optional<UDPError> rc = sock().bind(hton(port));
 		if(!rc.has_value())

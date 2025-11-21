@@ -2,19 +2,26 @@
 
 #include <iostream>
 
-UDPSocket::UDPSocket()
+/*UDPSocket::UDPSocket()
 {
 	intefaceIP_ = INADDR_ANY;
 	reset();
+	std::cout << "UDP socket created" << std::endl;
+}*/
+
+UDPSocket::UDPSocket(uint16_t port) : intefaceIP_(INADDR_ANY)
+{
+	//std::cout << "Socket bound to port: " << ntoh(port) << std::endl;
+	std::optional<UDPError> rc = bind(port);
+	if(rc.has_value())
+	{
+		throw std::runtime_error("UDPSocket::UDPSocket(uint16_t) bind failed: " + udp_error_to_string(rc.value()));
+	}
 }
 
-UDPSocket::UDPSocket(uint32_t port)
+UDPSocket::UDPSocket(uint16_t port, IPAddress ip)
 {
-	bind(port);
-}
-
-UDPSocket::UDPSocket(uint32_t port, IPAddress ip)
-{
+	//std::cout << "Socket bound to port: " << ntoh(port) << " on interface: " << ip << std::endl;
 	bind(port);
 	bindInteface(ip);
 }
@@ -26,36 +33,76 @@ UDPSocket::~UDPSocket()
 #if defined _WIN32
 	WSACleanup();
 #endif
+	//std::cout << "UDP socket destroyed" << std::endl;
+}
+
+
+UDPSocket::UDPSocket(UDPSocket&& other)
+{
+	//std::cout << "UDPSocket move constructor called" << std::endl;
+	sock_ = std::move(other.sock_);
+	other.sock_ = INVALID_SOCKET;
+
+	port_ = std::move(other.port_);
+	other.port_ = 0;
+	intefaceIP_ = std::move(other.intefaceIP_);
+	other.intefaceIP_ = IPAddress(0,0,0,0).toNet();
+}
+
+UDPSocket& UDPSocket::operator=(UDPSocket&& other)
+{
+	//std::cout << "UDPSocket move assignment operator called" << std::endl;
+	if(this != &other)
+	{
+		if (sock_ != INVALID_SOCKET) {
+            CLOSE_SOCKET(sock_);
+            sock_ = INVALID_SOCKET;
+        }
+		sock_ = std::move(other.sock_);
+		other.sock_ = INVALID_SOCKET;
+		port_ = std::move(other.port_);
+		other.port_ = 0;
+		intefaceIP_ = std::move(other.intefaceIP_);
+		other.sock_ = INVALID_SOCKET;
+	}
+	return *this;
 }
 
 void UDPSocket::reset()
 {
-    if (sock_ != INVALID_SOCKET) 
+	if (sock_ != INVALID_SOCKET) 
 	{
-        CLOSE_SOCKET(sock_);
-        sock_ = INVALID_SOCKET;
-    }
+		CLOSE_SOCKET(sock_);
+		sock_ = INVALID_SOCKET;
+	}
 
 #if defined(_WIN32)
-    WSADATA wsa;
-    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-        throw std::runtime_error("WSAStartup failed");
+	WSADATA wsa;
+	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+		throw std::runtime_error("WSAStartup failed");
 #endif
 
-    sock_ = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sock_ == INVALID_SOCKET)
-        throw std::runtime_error("socket() failed");
+	sock_ = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sock_ == INVALID_SOCKET)
+		throw std::runtime_error("socket() failed");
 
-    int enable = 1;
-    setsockopt(sock_, SOL_SOCKET, SO_BROADCAST, &enable, sizeof(enable));
+	int enable = 1;
+	if(setsockopt(sock_, SOL_SOCKET, SO_BROADCAST, &enable, sizeof(enable)) < 0)
+		throw std::runtime_error("setsockopt(SO_BROADCAST) failed");
 
 #if defined(_WIN32)
-    u_long mode = 1;
-    ioctlsocket(sock_, FIONBIO, &mode);
+	u_long mode = 1;
+	ioctlsocket(sock_, FIONBIO, &mode);
 #else
-    long flags = fcntl(sock_, F_GETFL, 0);
-    fcntl(sock_, F_SETFL, flags | O_NONBLOCK);
+	long flags = fcntl(sock_, F_GETFL, 0);
+	fcntl(sock_, F_SETFL, flags | O_NONBLOCK);
 #endif
+	int broadcast = 1;
+	if(setsockopt(sock_, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast)) < 0)
+		std::cerr << "Warning SO_BROADCAST" << std::endl; 
+
+	if(setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, &broadcast, sizeof(broadcast)) < 0)
+		std::cerr << "Warning SO_REUSEADDR" << std::endl;
 }
 
 std::optional<UDPError> UDPSocket::bind()
@@ -109,6 +156,7 @@ std::variant<size_t, UDPError> UDPSocket::send_to(const uint8_t* data, size_t si
 
 std::variant<ReceiveInfo, UDPError> UDPSocket::recieve(uint8_t* buf, size_t size)
 {
+	alignas(cmsghdr) char control[512] = {0};
 	sockaddr_in srcaddr{};
 	iovec iov{};
 	iov.iov_base = buf;
@@ -119,8 +167,8 @@ std::variant<ReceiveInfo, UDPError> UDPSocket::recieve(uint8_t* buf, size_t size
 	msg.msg_namelen = sizeof(srcaddr);
 	msg.msg_iov = &iov;
 	msg.msg_iovlen = 1;
-	msg.msg_control = nullptr;
-	msg.msg_controllen = 0;
+	msg.msg_control = control;
+	msg.msg_controllen = sizeof(control);
 
 	ssize_t rc = recvmsg(sock_, &msg, 0);
 	if(rc >= 0)
@@ -145,6 +193,7 @@ std::variant<ReceiveInfo, UDPError> UDPSocket::recieve(uint8_t* buf, size_t size
 		return RECEIVE_NONE;
 	return rcE;
 }
+
 
 uint16_t UDPSocket::getBindPort()
 {
@@ -210,64 +259,63 @@ std::vector<IPAddress> intefacesIPs()
 		int err = SOCKET_ERROR_CODE;
 		errno = 0;
 		#ifdef _WIN32
-    switch (err) {
-        case 0:                     return UDPError::SUCCESS;
-        case WSAEACCES:             return UDPError::PERMISSION_DENIED;
-        case WSAEMSGSIZE:           return UDPError::MESSAGE_TOO_LARGE;
-        case WSAENOBUFS:            return UDPError::NO_BUFFER_SPACE;
-        case WSAEWOULDBLOCK:        return UDPError::WOULD_BLOCK;
-        case WSAENOTSOCK:           return UDPError::INVALID_SOCKET_DESC;
-        case WSAEINVAL:             return UDPError::INVALID_ARGUMENT;
-        case WSAENETDOWN:           return UDPError::NETWORK_DOWN;
-        case WSAEADDRNOTAVAIL:      return UDPError::ADDRESS_NOT_AVAILABLE;
-        case WSAEOPNOTSUPP:         return UDPError::OPERATION_NOT_SUPPORTED;
-        case WSAESHUTDOWN:          return UDPError::SOCKET_CLOSED;
-        case WSAEINTR:              return UDPError::INTERRUPTED;
-        case WSANOTINITIALISED:     return UDPError::WSA_NOT_INITIALIZED;
-        case WSAEINPROGRESS:        return UDPError::WSA_IN_PROGRESS;
-        default:                    return UDPError::UNKNOWN;
-    }
+	switch (err) {
+		case 0:                     return UDPError::SUCCESS;
+		case WSAEACCES:             return UDPError::PERMISSION_DENIED;
+		case WSAEMSGSIZE:           return UDPError::MESSAGE_TOO_LARGE;
+		case WSAENOBUFS:            return UDPError::NO_BUFFER_SPACE;
+		case WSAEWOULDBLOCK:        return UDPError::WOULD_BLOCK;
+		case WSAENOTSOCK:           return UDPError::INVALID_SOCKET_DESC;
+		case WSAEINVAL:             return UDPError::INVALID_ARGUMENT;
+		case WSAENETDOWN:           return UDPError::NETWORK_DOWN;
+		case WSAEADDRNOTAVAIL:      return UDPError::ADDRESS_NOT_AVAILABLE;
+		case WSAEOPNOTSUPP:         return UDPError::OPERATION_NOT_SUPPORTED;
+		case WSAESHUTDOWN:          return UDPError::SOCKET_CLOSED;
+		case WSAEINTR:              return UDPError::INTERRUPTED;
+		case WSANOTINITIALISED:     return UDPError::WSA_NOT_INITIALIZED;
+		case WSAEINPROGRESS:        return UDPError::WSA_IN_PROGRESS;
+		default:                    return static_cast<UDPError>(err);
+	}
 #else
-    switch (err) {
-        case 0:                     return UDPError::SUCCESS;
-        case EACCES:                return UDPError::PERMISSION_DENIED;
-        case EMSGSIZE:              return UDPError::MESSAGE_TOO_LARGE;
-        case ENOBUFS:               return UDPError::NO_BUFFER_SPACE;
-        case EWOULDBLOCK:           return UDPError::WOULD_BLOCK;
-        case EBADF:                 return UDPError::INVALID_SOCKET_DESC;
-        case EINVAL:                return UDPError::INVALID_ARGUMENT;
-        case ENETDOWN:              return UDPError::NETWORK_DOWN;
-        case EADDRNOTAVAIL:         return UDPError::ADDRESS_NOT_AVAILABLE;
-        case EOPNOTSUPP:            return UDPError::OPERATION_NOT_SUPPORTED;
-        case EPIPE:                 return UDPError::SOCKET_CLOSED;
-        case EINTR:                 return UDPError::INTERRUPTED;
-        case EFAULT:                return UDPError::MEMORY_FAULT;
-        case EDESTADDRREQ:          return UDPError::DEST_ADDRESS_REQUIRED;
-        default:                    return UDPError::UNKNOWN;
-    }
+	switch (err) {
+		case 0:                     return UDPError::SUCCESS;
+		case EACCES:                return UDPError::PERMISSION_DENIED;
+		case EMSGSIZE:              return UDPError::MESSAGE_TOO_LARGE;
+		case ENOBUFS:               return UDPError::NO_BUFFER_SPACE;
+		case EWOULDBLOCK:           return UDPError::WOULD_BLOCK;
+		case EBADF:                 return UDPError::INVALID_SOCKET_DESC;
+		case EINVAL:                return UDPError::INVALID_ARGUMENT;
+		case ENETDOWN:              return UDPError::NETWORK_DOWN;
+		case EADDRNOTAVAIL:         return UDPError::ADDRESS_NOT_AVAILABLE;
+		case EOPNOTSUPP:            return UDPError::OPERATION_NOT_SUPPORTED;
+		case EPIPE:                 return UDPError::SOCKET_CLOSED;
+		case EINTR:                 return UDPError::INTERRUPTED;
+		case EFAULT:                return UDPError::MEMORY_FAULT;
+		case EDESTADDRREQ:          return UDPError::DEST_ADDRESS_REQUIRED;
+		default:                    return static_cast<UDPError>(err);
+	}
 #endif
 }
 
 std::string udp_error_to_string(UDPError err) {
-    switch (err) {
-        case UDPError::SUCCESS:               return "Success";
-        case UDPError::PERMISSION_DENIED:     return "Permission denied (EACCES/WSAEACCES)";
-        case UDPError::MESSAGE_TOO_LARGE:     return "Message too large (EMSGSIZE/WSAEMSGSIZE)";
-        case UDPError::NO_BUFFER_SPACE:       return "No buffer space (ENOBUFS/WSAENOBUFS)";
-        case UDPError::WOULD_BLOCK:           return "Would block (EAGAIN/WSAEWOULDBLOCK)";
-        case UDPError::INVALID_SOCKET_DESC:   return "Invalid socket descriptor (EBADF/WSAENOTSOCK)";
-        case UDPError::INVALID_ARGUMENT:      return "Invalid argument (EINVAL/WSAEINVAL)";
-        case UDPError::NETWORK_DOWN:          return "Network down (ENETDOWN/WSAENETDOWN)";
-        case UDPError::ADDRESS_NOT_AVAILABLE: return "Address not available (EADDRNOTAVAIL/WSAEADDRNOTAVAIL)";
-        case UDPError::OPERATION_NOT_SUPPORTED:return "Operation not supported (EOPNOTSUPP/WSAEOPNOTSUPP)";
-        case UDPError::SOCKET_CLOSED:         return "Socket closed (EPIPE/WSAESHUTDOWN)";
-        case UDPError::INTERRUPTED:           return "Interrupted (EINTR/WSAEINTR)";
-        case UDPError::WSA_NOT_INITIALIZED:   return "Winsock not initialized (WSANOTINITIALISED)";
-        case UDPError::WSA_IN_PROGRESS:       return "Operation in progress (WSAEINPROGRESS)";
-        case UDPError::MEMORY_FAULT:          return "Memory fault (EFAULT)";
-        case UDPError::DEST_ADDRESS_REQUIRED: return "Destination address required (EDESTADDRREQ)";
-        case UDPError::UNKNOWN:               return "Unknown error";
-        default:                              return "Invalid error code";
-    }
+	switch (err) {
+		case UDPError::SUCCESS:               return "Success";
+		case UDPError::PERMISSION_DENIED:     return "Permission denied (EACCES/WSAEACCES)";
+		case UDPError::MESSAGE_TOO_LARGE:     return "Message too large (EMSGSIZE/WSAEMSGSIZE)";
+		case UDPError::NO_BUFFER_SPACE:       return "No buffer space (ENOBUFS/WSAENOBUFS)";
+		case UDPError::WOULD_BLOCK:           return "Would block (EAGAIN/WSAEWOULDBLOCK)";
+		case UDPError::INVALID_SOCKET_DESC:   return "Invalid socket descriptor (EBADF/WSAENOTSOCK)";
+		case UDPError::INVALID_ARGUMENT:      return "Invalid argument (EINVAL/WSAEINVAL)";
+		case UDPError::NETWORK_DOWN:          return "Network down (ENETDOWN/WSAENETDOWN)";
+		case UDPError::ADDRESS_NOT_AVAILABLE: return "Address not available (EADDRNOTAVAIL/WSAEADDRNOTAVAIL)";
+		case UDPError::OPERATION_NOT_SUPPORTED:return "Operation not supported (EOPNOTSUPP/WSAEOPNOTSUPP)";
+		case UDPError::SOCKET_CLOSED:         return "Socket closed (EPIPE/WSAESHUTDOWN)";
+		case UDPError::INTERRUPTED:           return "Interrupted (EINTR/WSAEINTR)";
+		case UDPError::WSA_NOT_INITIALIZED:   return "Winsock not initialized (WSANOTINITIALISED)";
+		case UDPError::WSA_IN_PROGRESS:       return "Operation in progress (WSAEINPROGRESS)";
+		case UDPError::MEMORY_FAULT:          return "Memory fault (EFAULT)";
+		case UDPError::DEST_ADDRESS_REQUIRED: return "Destination address required (EDESTADDRREQ)";
+		default:                              return "Unknown UDP error:" + std::to_string(static_cast<int>(err));
+	}
 }
 

@@ -44,27 +44,25 @@ using socket_t = int;
 
 
 enum class UDPError {
-    SUCCESS = 0,                    // 0 — успех (обе ОС)
+	SUCCESS = 0,                    // 0 — успех (обе ОС)
 
-    PERMISSION_DENIED,              // Linux: EACCES       | Windows: WSAEACCES
-    MESSAGE_TOO_LARGE,              // Linux: EMSGSIZE     | Windows: WSAEMSGSIZE
-    NO_BUFFER_SPACE,                // Linux: ENOBUFS      | Windows: WSAENOBUFS
-    WOULD_BLOCK,                    // Linux: EAGAIN/WOULDBLOCK | Windows: WSAEWOULDBLOCK
-    INVALID_SOCKET_DESC,            // Linux: EBADF        | Windows: WSAENOTSOCK
-    INVALID_ARGUMENT,               // Linux: EINVAL       | Windows: WSAEINVAL
-    NETWORK_DOWN,                   // Linux: ENETDOWN     | Windows: WSAENETDOWN
-    ADDRESS_NOT_AVAILABLE,          // Linux: EADDRNOTAVAIL| Windows: WSAEADDRNOTAVAIL
-    OPERATION_NOT_SUPPORTED,        // Linux: EOPNOTSUPP   | Windows: WSAEOPNOTSUPP
-    SOCKET_CLOSED,                  // Linux: EPIPE        | Windows: WSAESHUTDOWN
-    INTERRUPTED,                    // Linux: EINTR        | Windows: WSAEINTR
+	PERMISSION_DENIED,				// Linux: EACCES       | Windows: WSAEACCES
+	MESSAGE_TOO_LARGE,				// Linux: EMSGSIZE     | Windows: WSAEMSGSIZE
+	NO_BUFFER_SPACE,				// Linux: ENOBUFS      | Windows: WSAENOBUFS
+	WOULD_BLOCK,					// Linux: EAGAIN/WOULDBLOCK | Windows: WSAEWOULDBLOCK
+	INVALID_SOCKET_DESC,			// Linux: EBADF        | Windows: WSAENOTSOCK
+	INVALID_ARGUMENT,				// Linux: EINVAL       | Windows: WSAEINVAL
+	NETWORK_DOWN,					// Linux: ENETDOWN     | Windows: WSAENETDOWN
+	ADDRESS_NOT_AVAILABLE,			// Linux: EADDRNOTAVAIL| Windows: WSAEADDRNOTAVAIL
+	OPERATION_NOT_SUPPORTED,		// Linux: EOPNOTSUPP   | Windows: WSAEOPNOTSUPP
+	SOCKET_CLOSED,					// Linux: EPIPE        | Windows: WSAESHUTDOWN
+	INTERRUPTED,					// Linux: EINTR        | Windows: WSAEINTR
 
-    WSA_NOT_INITIALIZED,            // Windows only: WSANOTINITIALISED
-    WSA_IN_PROGRESS,                // Windows only: WSAEINPROGRESS
+	WSA_NOT_INITIALIZED,			// Windows only: WSANOTINITIALISED
+	WSA_IN_PROGRESS,				// Windows only: WSAEINPROGRESS
 
-    MEMORY_FAULT,                   // Linux only: EFAULT
-    DEST_ADDRESS_REQUIRED,          // Linux only: EDESTADDRREQ
-
-    UNKNOWN                         // Любой другой код
+	MEMORY_FAULT,					// Linux only: EFAULT
+	DEST_ADDRESS_REQUIRED			// Linux only: EDESTADDRREQ
 };
 
 UDPError last_udp_error();
@@ -93,14 +91,18 @@ class UDPSocket
 	uint16_t port_;
 	uint32_t intefaceIP_;
 
-
 	std::optional<UDPError> bind(); 
 public:
 
-	UDPSocket();
-	UDPSocket(uint32_t port); // big-endian
-	UDPSocket(uint32_t port, IPAddress p); // big-endian
+	UDPSocket() = delete;
+	explicit UDPSocket(uint16_t port); // big-endian
+	UDPSocket(uint16_t port, IPAddress p); // big-endian
 	~UDPSocket();
+
+	UDPSocket(const UDPSocket&) = delete;
+	UDPSocket(UDPSocket&& other);
+	UDPSocket& operator=(const UDPSocket&) = delete;
+	UDPSocket& operator=(UDPSocket&& other);
 
 	void reset();
 
