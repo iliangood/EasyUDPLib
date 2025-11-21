@@ -127,14 +127,18 @@ std::variant<ReceiveInfo, UDPError> UDPSocket::recieve(uint8_t* buf, size_t size
 		if(reinterpret_cast<sockaddr*>(msg.msg_name)->sa_family == AF_INET)
 		{
 			IPAddress ip = IPAddress::fromNet(reinterpret_cast<sockaddr_in*>(msg.msg_name)->sin_addr.s_addr);
+			std::cout << "Received from IP: " << ip << std::endl;
 			std::vector<IPAddress> ips = intefacesIPs();
+			std::cout << "get interfaces" << std::endl;
 			if(std::find(ips.begin(), ips.end(), ip) == ips.end())
 				return ReceiveInfo(rc, ip);
+			std::cout << "checked" << std::endl;
 			return RECEIVE_NONE;
 		}
+		std::cout << "Received not AF_INET"<< std::endl;
 		return ReceiveInfo(rc, IP_ANY);
 	}
-
+	std::cout << "not received"<< std::endl;
 	UDPError rcE = last_udp_error();
 	if(rcE == UDPError::WOULD_BLOCK)
 		return RECEIVE_NONE;
