@@ -32,10 +32,7 @@ public:
 
 	UDPTransmitter(UDPSocket* sock, std::string magicString) :
 	sock_(sock), target_(IP_BROADCAST), magicString_(std::move(magicString))
-	{
-		this->sock().bindInteface(target_);
-		this->sock().bindInteface(IP_ANY);
-	}
+	{}
 
 	uint16_t getBindPort()
 	{
@@ -112,6 +109,7 @@ public:
 			std::cerr << udp_error_to_string(std::get<UDPError>(rc)) << std::endl;
 			return -1;
 		}
+		delete[] buf;
 		return std::get<size_t>(rc);
 	}
 

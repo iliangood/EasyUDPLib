@@ -13,7 +13,7 @@ struct exempleStruct
 
 int main()
 {
-    UDPTransmitter transmitter(45088, "testing");
+    UDPTransmitter transmitter(56728, "submarine");
     
     Message<1024> msg;
 
@@ -41,7 +41,7 @@ int main()
 			std::cout << ex.b << std::endl;
 		}
 		msg.clear();
-		std::this_thread::sleep_for(std::chrono::seconds(1));
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
     
     return 0;
