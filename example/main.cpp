@@ -13,7 +13,7 @@ struct exempleStruct
 
 int main()
 {
-    UDPTransmitter transmitter(56728, "submarine");
+    UDPTransmitter transmitter(45088, "testing");
     
     Message<1024> msg;
 
