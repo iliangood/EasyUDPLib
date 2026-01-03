@@ -148,6 +148,8 @@ public:
 			}
 
 		}
+		if(target_ == IP_ANY)
+			target_ = IP_BROADCAST;
 		size_t new_size = std::get<ReceiveInfo>(rc).dataSize - magicString_.length();
 		memmove(buffer, buffer + magicString_.length(), new_size);
 		return ReceiveInfo(new_size, remoteIP);
