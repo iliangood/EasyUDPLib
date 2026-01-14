@@ -21,6 +21,8 @@ using socket_t = SOCKET;
 #include <unistd.h>
 #include <cerrno>
 
+#include <ifaddrs.h>
+
 using socket_t = int;
 
 #define CLOSE_SOCKET close
@@ -29,7 +31,7 @@ using socket_t = int;
 #define SOCKET_ERROR (-1)
 
 #endif
-#include <ifaddrs.h>
+
 #include <netdb.h>
 
 #include <cstring>
