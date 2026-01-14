@@ -38,6 +38,7 @@ using socket_t = int;
 #include <cstring>
 #include <stdexcept>
 #include <expected>
+#include <variant>
 #include <vector>
 #include <thread>
 #include <chrono>
