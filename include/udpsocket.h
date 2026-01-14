@@ -21,6 +21,7 @@ using socket_t = SOCKET;
 #include <unistd.h>
 #include <cerrno>
 
+#include <netdb.h>
 #include <ifaddrs.h>
 
 using socket_t = int;
@@ -32,7 +33,6 @@ using socket_t = int;
 
 #endif
 
-#include <netdb.h>
 
 #include <cstring>
 #include <stdexcept>
