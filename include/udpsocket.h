@@ -11,7 +11,7 @@
 
 using socket_t = SOCKET;
 
-#define CLOSE_SOCKET close_socket
+#define CLOSE_SOCKET closesocket
 #define SOCKET_ERROR_CODE WSAGetLastError()
 
 #else
