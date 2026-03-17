@@ -195,7 +195,7 @@ std::optional<UDPError> UDPSocket::bind()
 
 std::optional<UDPError> UDPSocket::bind(uint16_t port)
 {
-    port_ = htons(port);
+    port_ = port; // !TODO: Проверить на Windows, тут был hton, но на Linux так не работало
     return bind();
 }
 
