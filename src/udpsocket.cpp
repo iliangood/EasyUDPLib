@@ -410,7 +410,6 @@ UDPError last_udp_error()
         case EACCES:                return UDPError::PERMISSION_DENIED;
         case EMSGSIZE:              return UDPError::MESSAGE_TOO_LARGE;
         case ENOBUFS:               return UDPError::NO_BUFFER_SPACE;
-        case EWOULDBLOCK:
         case EAGAIN:                return UDPError::WOULD_BLOCK;
         case EBADF:                 return UDPError::INVALID_SOCKET_DESC;
         case EINVAL:                return UDPError::INVALID_ARGUMENT;

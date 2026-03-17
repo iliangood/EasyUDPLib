@@ -1,48 +1,44 @@
-#include <iostream>
-#include <thread>
-#include <string>
 #include <chrono>
+#include <iostream>
+#include <string>
+#include <thread>
 
 #include <udptransmitter.h>
 
-struct exempleStruct
-{
-	int a;
-	long long b;
+struct exempleStruct {
+  int a;
+  long long b;
 };
 
-int main()
-{
-    UDPTransmitter transmitter(45089, "testing");
-    
-    Message<1024> msg;
+int main() {
+  UDPTransmitter transmitter(45089, "testing");
 
-	while(true)
-	{
-		msg.push("можно записать строку");
-		msg.push((uint32_t)12542);
-		msg.push(exempleStruct{124, 15125});
-		transmitter.sendData(msg);
+  Message<1024> msg;
 
-		msg.clear();
-		ReceiveInfo rc = transmitter.receiveData(&msg);
-		if(recieved(rc))
-		{
-			std::cout << "recieved from: ";
-			if(rc.remoteIP.has_value())
-				std::cout << rc.remoteIP.value() << std::endl;
-			else
-				std::cout << "unkown" << std::endl;
-			std::cout << "data:" << std::endl;
-			std::cout << msg.readString() << std::endl;
-			std::cout << msg.read<uint32_t>() << std::endl;
-			exempleStruct ex = msg.read<exempleStruct>();
-			std::cout << ex.a << std::endl;
-			std::cout << ex.b << std::endl;
-		}
-		msg.clear();
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-	}
-    
-    return 0;
+  while (true) {
+    msg.push("можно записать строку");
+    msg.push((uint32_t)12542);
+    msg.push(exempleStruct{124, 15125});
+    transmitter.sendData(msg);
+
+    msg.clear();
+    ReceiveInfo rc = transmitter.receiveData(&msg);
+    if (recieved(rc)) {
+      std::cout << "recieved from: ";
+      if (rc.remoteIP.has_value())
+        std::cout << rc.remoteIP.value() << std::endl;
+      else
+        std::cout << "unkown" << std::endl;
+      std::cout << "data:" << std::endl;
+      std::cout << msg.readString() << std::endl;
+      std::cout << msg.read<uint32_t>() << std::endl;
+      exempleStruct ex = msg.read<exempleStruct>();
+      std::cout << ex.a << std::endl;
+      std::cout << ex.b << std::endl;
+    }
+    msg.clear();
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+
+  return 0;
 }
