@@ -19,7 +19,7 @@ target_include_directories(udp_library PUBLIC
 )
 
 if(WIN32)
-    target_link_libraries(udp_library PRIVATE ws2_32)
+    target_link_libraries(udp_library PRIVATE ws2_32 iphlpapi)
 endif()
 
 install(TARGETS udp_library

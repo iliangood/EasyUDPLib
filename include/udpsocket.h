@@ -104,9 +104,9 @@ public:
 	~UDPSocket();
 
 	UDPSocket(const UDPSocket&) = delete;
-	UDPSocket(UDPSocket&& other);
+	UDPSocket(UDPSocket&& other) noexcept;
 	UDPSocket& operator=(const UDPSocket&) = delete;
-	UDPSocket& operator=(UDPSocket&& other);
+	UDPSocket& operator=(UDPSocket&& other) noexcept;
 
 	void reset();
 
